@@ -76,4 +76,5 @@ var BlockInfo = map[uint16]Info{
 	138: Info{color.NRGBA{127, 215, 211, 192}, 0},   // beacon block
 	139: Info{color.NRGBA{115, 115, 115, 255}, 0},   // cobblestone wall
 	140: Info{color.NRGBA{122, 65, 49, 255}, 0},     // flower pot
+	144: Info{color.NRGBA{141, 141, 141, 255}, 0},   // mob head
 }

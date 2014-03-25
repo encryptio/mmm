@@ -22,6 +22,7 @@ func main() {
 	day := flag.Bool("day", true, "Daytime")
 	samples := flag.Int("samples", 100, "Number of samples per pixel")
 	cameraType := flag.String("camera", "iso", "Camera type (iso, topdown)")
+	emptyExit := flag.Int("emptyexit", 0, "Exit code to return when the image is completely empty")
 	flag.Parse()
 
 	w := world.New(*regionPath)
@@ -65,5 +66,25 @@ func main() {
 	if err != nil {
 		log.Printf("Couldn't close filehandle: %s\n", err.Error())
 		os.Exit(1)
+	}
+
+	isEmpty := true
+	for x := 0; x < *wid; x++ {
+		for y := 0; y < *hei; y++ {
+			if im.Pix[im.PixOffset(x, y)+3] != 0 {
+				isEmpty = false
+				break
+			}
+		}
+
+		if !isEmpty {
+			break
+		}
+	}
+
+	if isEmpty {
+		os.Exit(*emptyExit)
+	} else {
+		os.Exit(0)
 	}
 }

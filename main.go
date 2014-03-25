@@ -19,17 +19,22 @@ func main() {
 	hei := flag.Int("h", 128, "Height of output image")
 	regionPath := flag.String("region", "hub/region/", "Path to region directory of world")
 	outputPath := flag.String("o", "out.png", "Output filename")
+	day := flag.Bool("day", true, "Daytime")
+	samples := flag.Int("samples", 100, "Number of samples per pixel")
 	flag.Parse()
 
 	w := world.New(*regionPath)
-
 	c := camera.TopDown(*sx, *sz)
+	sky := render.SkyDay
+	if !*day {
+		sky = render.SkyNight
+	}
 
 	im := image.NewNRGBA(image.Rect(0, 0, *wid, *hei))
 	for x := 0; x < *wid; x++ {
 		log.Printf("%d/%d\n", x, *wid)
 		for y := 0; y < *hei; y++ {
-			im.SetNRGBA(x, y, render.ShadeRay(w, c.RayAt(x, y), render.SkyNight))
+			im.SetNRGBA(x, y, render.ShadeRay(w, c.RayAt(x, y), sky, *samples))
 		}
 	}
 

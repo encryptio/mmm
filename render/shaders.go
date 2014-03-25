@@ -21,7 +21,7 @@ func over(bottom, top color.NRGBA) (ret color.NRGBA) {
 	return ret
 }
 
-func ShadeRay(w *world.World, ray Ray, sky color.NRGBA) color.NRGBA {
+func ShadeRay(w *world.World, ray Ray, sky color.NRGBA, samples int) color.NRGBA {
 	c := color.NRGBA{0, 0, 0, 0}
 
 	var firstX, firstY, firstZ int
@@ -46,7 +46,7 @@ func ShadeRay(w *world.World, ray Ray, sky color.NRGBA) color.NRGBA {
 	})
 
 	if hit {
-		light := AmbientAt(w, firstX, firstY+1, firstZ, sky)
+		light := AmbientAt(w, firstX, firstY+1, firstZ, sky, samples)
 		c.R = uint8(uint16(c.R) * uint16(light.R) / 255)
 		c.G = uint8(uint16(c.G) * uint16(light.G) / 255)
 		c.B = uint8(uint16(c.B) * uint16(light.B) / 255)
@@ -55,18 +55,16 @@ func ShadeRay(w *world.World, ray Ray, sky color.NRGBA) color.NRGBA {
 	return c
 }
 
-func AmbientAt(w *world.World, sx, sy, sz int, sky color.NRGBA) (ret color.NRGBA) {
-	ret = RadiosityAt(w, sx, sy, sz, sky)
+func AmbientAt(w *world.World, sx, sy, sz int, sky color.NRGBA, samples int) (ret color.NRGBA) {
+	ret = RadiosityAt(w, sx, sy, sz, sky, samples)
 	ret.R = ret.R/2 + (ret.R/2+sky.R/2)/2
 	ret.G = ret.G/2 + (ret.G/2+sky.G/2)/2
 	ret.B = ret.B/2 + (ret.B/2+sky.B/2)/2
 	return
 }
 
-func RadiosityAt(w *world.World, sx, sy, sz int, sky color.NRGBA) color.NRGBA {
+func RadiosityAt(w *world.World, sx, sy, sz int, sky color.NRGBA, samples int) color.NRGBA {
 	var accum color.NRGBA64
-
-	const samples = 80
 
 	for i := 0; i < samples; i++ {
 		dx := rand.Int()%128 - 64
@@ -102,5 +100,5 @@ func RadiosityAt(w *world.World, sx, sy, sz int, sky color.NRGBA) color.NRGBA {
 		}
 	}
 
-	return color.NRGBA{uint8(accum.R / samples), uint8(accum.G / samples), uint8(accum.B / samples), 255}
+	return color.NRGBA{uint8(accum.R / uint16(samples)), uint8(accum.G / uint16(samples)), uint8(accum.B / uint16(samples)), 255}
 }

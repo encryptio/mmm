@@ -21,13 +21,24 @@ func main() {
 	outputPath := flag.String("o", "out.png", "Output filename")
 	day := flag.Bool("day", true, "Daytime")
 	samples := flag.Int("samples", 100, "Number of samples per pixel")
+	cameraType := flag.String("camera", "iso", "Camera type (iso, topdown)")
 	flag.Parse()
 
 	w := world.New(*regionPath)
-	c := camera.TopDown(*sx, *sz)
 	sky := render.SkyDay
 	if !*day {
 		sky = render.SkyNight
+	}
+
+	var c camera.Camera
+	switch *cameraType {
+	case "iso":
+		c = camera.Isometric(*sx, *sz)
+	case "topdown":
+		c = camera.TopDown(*sx, *sz)
+	default:
+		log.Printf("Unknown camera type %v", *cameraType)
+		os.Exit(1)
 	}
 
 	im := image.NewNRGBA(image.Rect(0, 0, *wid, *hei))

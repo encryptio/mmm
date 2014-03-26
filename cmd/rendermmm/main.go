@@ -44,7 +44,6 @@ func main() {
 
 	im := image.NewNRGBA(image.Rect(0, 0, *wid, *hei))
 	for x := 0; x < *wid; x++ {
-		log.Printf("%d/%d\n", x, *wid)
 		for y := 0; y < *hei; y++ {
 			im.SetNRGBA(x, y, render.ShadeRay(w, c.RayAt(x, y), sky, *samples))
 		}

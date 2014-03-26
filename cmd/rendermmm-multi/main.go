@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,6 +14,48 @@ const CHUNK_SIZE = 128
 
 type Pair struct {
 	x, y int
+}
+
+func Worker(commonArgs []string, outputPath string, toWorker chan Pair, fromWorker chan Pair, badFromWorker chan Pair) {
+	for this := range toWorker {
+		fmt.Printf("rendering %d,%d\n", this.x, this.y)
+
+		args := make([]string, len(commonArgs))
+		copy(args, commonArgs)
+		args = append(args, []string{
+			fmt.Sprintf("-x=%v", this.x*CHUNK_SIZE),
+			fmt.Sprintf("-z=%v", this.y*CHUNK_SIZE),
+			fmt.Sprintf("-o=%v", filepath.Join(outputPath, fmt.Sprintf("map.%d.%d.png", this.x, this.y))),
+		}...)
+
+		cmd := exec.Command("rendermmm", args...)
+		cmd.Stdout = os.Stdout
+		cmd.Stdin = os.Stdin
+		cmd.Stderr = os.Stderr
+		err := cmd.Run()
+		if err != nil {
+			quiet := false
+
+			if exiterr, ok := err.(*exec.ExitError); ok {
+				if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+					exitcode := status.ExitStatus()
+					if exitcode == 77 {
+						// empty image
+						quiet = true
+					}
+				}
+			}
+
+			if !quiet {
+				log.Printf("Failed to run: %s\n", err.Error())
+			}
+
+			badFromWorker <- this
+			continue
+		}
+
+		fromWorker <- this
+	}
 }
 
 func main() {
@@ -33,47 +76,23 @@ func main() {
 		fmt.Sprintf("-h=%v", CHUNK_SIZE),
 	}
 
+	toWorker := make(chan Pair)
+	fromWorker := make(chan Pair)
+	badFromWorker := make(chan Pair)
+
+	go Worker(commonArgs, *outputPath, toWorker, fromWorker, badFromWorker)
+	go Worker(commonArgs, *outputPath, toWorker, fromWorker, badFromWorker)
+	go Worker(commonArgs, *outputPath, toWorker, fromWorker, badFromWorker)
+	go Worker(commonArgs, *outputPath, toWorker, fromWorker, badFromWorker)
+
 	good := make(map[Pair]bool)
 	todo := []Pair{{0, 0}}
 	done := make(map[Pair]bool)
 	done[Pair{0, 0}] = true
+	inProgress := 0
 
-	for len(todo) > 0 {
-		this := todo[0]
-		todo = todo[1:]
-
-		fmt.Printf("rendering %d,%d\n", this.x, this.y)
-
-		args := make([]string, len(commonArgs))
-		copy(args, commonArgs)
-		args = append(args, []string{
-			fmt.Sprintf("-x=%v", this.x*CHUNK_SIZE),
-			fmt.Sprintf("-z=%v", this.y*CHUNK_SIZE),
-			fmt.Sprintf("-o=%v", filepath.Join(*outputPath, fmt.Sprintf("map.%d.%d.png", this.x, this.y))),
-		}...)
-
-		cmd := exec.Command("rendermmm", args...)
-		cmd.Stdout = os.Stdout
-		cmd.Stdin = os.Stdin
-		cmd.Stderr = os.Stderr
-		err := cmd.Run()
-		if err != nil {
-			if exiterr, ok := err.(*exec.ExitError); ok {
-				if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
-					exitcode := status.ExitStatus()
-					if exitcode == 77 {
-						// empty image
-						continue
-					}
-				}
-			}
-
-			fmt.Printf("Failed to run: %s\n", err.Error())
-			continue
-		}
-
+	expand := func(this Pair) {
 		good[this] = true
-
 		for dx := -1; dx <= 1; dx++ {
 			pair := Pair{this.x + dx, this.y}
 			exists := done[pair]
@@ -92,6 +111,35 @@ func main() {
 		}
 	}
 
+	for len(todo) > 0 || inProgress > 0 {
+		if len(todo) > 0 {
+			select {
+			case toWorker <- todo[0]:
+				todo = todo[1:]
+				inProgress++
+
+			case this := <-fromWorker:
+				expand(this)
+				inProgress--
+
+			case <-badFromWorker:
+				inProgress--
+			}
+		} else {
+			select {
+			case this := <-fromWorker:
+				expand(this)
+				inProgress--
+
+			case <-badFromWorker:
+				inProgress--
+			}
+		}
+	}
+
+	close(toWorker)
+
+	log.Printf("Writing html\n")
 	err := writeHtml(good, filepath.Join(*outputPath, "map.html"))
 	if err != nil {
 		fmt.Println(err)

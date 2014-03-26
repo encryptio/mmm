@@ -41,6 +41,7 @@ var BlockInfo = map[uint16]Info{
 	39:  Info{color.NRGBA{146, 109, 84, 255}, 0},    // brown mushroom
 	40:  Info{color.NRGBA{227, 10, 10, 255}, 0},     // red mushroom
 	42:  Info{color.NRGBA{238, 238, 238, 255}, 0},   // iron block
+	43:  Info{color.NRGBA{178, 178, 177, 255}, 0},   // double stone slab
 	44:  Info{color.NRGBA{178, 178, 177, 255}, 0},   // stone slab
 	45:  Info{color.NRGBA{125, 67, 51, 255}, 0},     // brick
 	47:  Info{color.NRGBA{86, 105, 5, 255}, 0},      // bookshelf

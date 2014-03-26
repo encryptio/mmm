@@ -87,9 +87,9 @@ func RadiosityAt(w *world.World, sx, sy, sz int, sky color.NRGBA, samples int) c
 			}
 
 			if info.Emission > 0 {
-				r += float64(info.Color.R) * float64(info.Emission) / 255 * 16
-				g += float64(info.Color.G) * float64(info.Emission) / 255 * 16
-				b += float64(info.Color.B) * float64(info.Emission) / 255 * 16
+				r += float64(info.Color.R) * float64(info.Emission) / 255 * 4
+				g += float64(info.Color.G) * float64(info.Emission) / 255 * 4
+				b += float64(info.Color.B) * float64(info.Emission) / 255 * 4
 			}
 
 			return false

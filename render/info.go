@@ -83,6 +83,7 @@ var BlockInfo = map[uint16]Info{
 	113: Info{color.NRGBA{43, 14, 19, 255}, 0},      // nether brick fence
 	114: Info{color.NRGBA{60, 24, 31, 255}, 0},      // nether brick stairs
 	116: Info{color.NRGBA{235, 235, 235, 255}, 0},   // enchantment table
+	118: Info{color.NRGBA{26, 26, 26, 255}, 0},      // cauldron
 	125: Info{color.NRGBA{181, 145, 90, 255}, 0},    // double oak wood slab
 	126: Info{color.NRGBA{181, 145, 90, 255}, 0},    // oak wood slab
 	127: Info{color.NRGBA{192, 119, 43, 255}, 0},    // cocoa plant

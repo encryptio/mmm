@@ -5,5 +5,5 @@ import (
 )
 
 type Camera interface {
-	RayAt(x, y int) render.Ray
+	RayAt(x, y float64) render.Ray
 }

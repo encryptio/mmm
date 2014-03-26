@@ -62,13 +62,15 @@ func main() {
 	regionPath := flag.String("region", "hub/region/", "Path to region directory of world")
 	outputPath := flag.String("o", "out", "Output directory")
 	day := flag.Bool("day", true, "Daytime")
-	samples := flag.Int("samples", 100, "Number of samples per pixel")
+	lightSamples := flag.Int("lightsamples", 100, "Number of light samples per probe")
+	pixelSamples := flag.Int("pixelsamples", 1, "Square root of number of probes per pixel")
 	cameraType := flag.String("camera", "iso", "Camera type (iso, topdown)")
 	flag.Parse()
 
 	commonArgs := []string{
 		fmt.Sprintf("-day=%v", *day),
-		fmt.Sprintf("-samples=%v", *samples),
+		fmt.Sprintf("-lightsamples=%v", *lightSamples),
+		fmt.Sprintf("-pixelsamples=%v", *pixelSamples),
 		fmt.Sprintf("-camera=%v", *cameraType),
 		fmt.Sprintf("-region=%v", *regionPath),
 		"-emptyexit=77",

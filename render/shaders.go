@@ -64,7 +64,9 @@ func AmbientAt(w *world.World, sx, sy, sz int, sky color.NRGBA, samples int) (re
 }
 
 func RadiosityAt(w *world.World, sx, sy, sz int, sky color.NRGBA, samples int) color.NRGBA {
-	var accum color.NRGBA64
+	r := float64(0)
+	g := float64(0)
+	b := float64(0)
 
 	for i := 0; i < samples; i++ {
 		dx := rand.Int()%128 - 64
@@ -85,20 +87,34 @@ func RadiosityAt(w *world.World, sx, sy, sz int, sky color.NRGBA, samples int) c
 			}
 
 			if info.Emission > 0 {
-				accum.R += uint16(info.Color.R) * uint16(info.Emission) / 255 * 16
-				accum.G += uint16(info.Color.G) * uint16(info.Emission) / 255 * 16
-				accum.B += uint16(info.Color.B) * uint16(info.Emission) / 255 * 16
+				r += float64(info.Color.R) * float64(info.Emission) / 255 * 16
+				g += float64(info.Color.G) * float64(info.Emission) / 255 * 16
+				b += float64(info.Color.B) * float64(info.Emission) / 255 * 16
 			}
 
 			return false
 		})
 
 		if hitEnd {
-			accum.R += uint16(sky.R)
-			accum.G += uint16(sky.G)
-			accum.B += uint16(sky.B)
+			r += float64(sky.R)
+			g += float64(sky.G)
+			b += float64(sky.B)
 		}
 	}
 
-	return color.NRGBA{uint8(accum.R / uint16(samples)), uint8(accum.G / uint16(samples)), uint8(accum.B / uint16(samples)), 255}
+	r /= float64(samples)
+	g /= float64(samples)
+	b /= float64(samples)
+
+	if r > 255 {
+		r = 255
+	}
+	if g > 255 {
+		g = 255
+	}
+	if b > 255 {
+		b = 255
+	}
+
+	return color.NRGBA{uint8(r), uint8(g), uint8(b), 255}
 }

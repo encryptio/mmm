@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"image"
+	"image/color"
 	"image/png"
 	"log"
 	"os"
@@ -13,14 +14,15 @@ import (
 )
 
 func main() {
-	sx := flag.Int("x", -63, "Starting x position")
-	sz := flag.Int("z", -63, "Starting z position")
+	sx := flag.Float64("x", -63, "Starting x position")
+	sz := flag.Float64("z", -63, "Starting z position")
 	wid := flag.Int("w", 128, "Width of output image")
 	hei := flag.Int("h", 128, "Height of output image")
 	regionPath := flag.String("region", "hub/region/", "Path to region directory of world")
 	outputPath := flag.String("o", "out.png", "Output filename")
 	day := flag.Bool("day", true, "Daytime")
-	samples := flag.Int("samples", 100, "Number of samples per pixel")
+	lightSamples := flag.Int("lightsamples", 100, "Number of light samples per probe")
+	pixelSamples := flag.Int("pixelsamples", 1, "Square root of number of probes per pixel")
 	cameraType := flag.String("camera", "iso", "Camera type (iso, topdown)")
 	emptyExit := flag.Int("emptyexit", 0, "Exit code to return when the image is completely empty")
 	flag.Parse()
@@ -42,10 +44,28 @@ func main() {
 		os.Exit(1)
 	}
 
+	sampleStep := 1.0 / float64(*pixelSamples)
+
 	im := image.NewNRGBA(image.Rect(0, 0, *wid, *hei))
 	for x := 0; x < *wid; x++ {
 		for y := 0; y < *hei; y++ {
-			im.SetNRGBA(x, y, render.ShadeRay(w, c.RayAt(x, y), sky, *samples))
+			var co color.NRGBA64
+			for dx := float64(0); dx < 0.999; dx += sampleStep {
+				for dy := float64(0); dy < 0.999; dy += sampleStep {
+					part := render.ShadeRay(w, c.RayAt(float64(x)+dx, float64(y)+dy), sky, *lightSamples)
+					co.R += uint16(part.R)
+					co.G += uint16(part.G)
+					co.B += uint16(part.B)
+					co.A += uint16(part.A)
+				}
+			}
+
+			co.R /= uint16(*pixelSamples * *pixelSamples)
+			co.G /= uint16(*pixelSamples * *pixelSamples)
+			co.B /= uint16(*pixelSamples * *pixelSamples)
+			co.A /= uint16(*pixelSamples * *pixelSamples)
+
+			im.SetNRGBA(x, y, color.NRGBA{uint8(co.R), uint8(co.G), uint8(co.B), uint8(co.A)})
 		}
 	}
 

@@ -10,7 +10,7 @@ import (
 	"syscall"
 )
 
-const CHUNK_SIZE = 128
+const CHUNK_SIZE = 256
 
 type Pair struct {
 	x, y int

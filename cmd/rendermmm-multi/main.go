@@ -20,12 +20,14 @@ func Worker(commonArgs []string, outputPath string, toWorker chan Pair, fromWork
 	for this := range toWorker {
 		fmt.Printf("rendering %d,%d\n", this.x, this.y)
 
+		output := filepath.Join(outputPath, fmt.Sprintf("map.%d.%d.png", this.x, this.y))
+
 		args := make([]string, len(commonArgs))
 		copy(args, commonArgs)
 		args = append(args, []string{
 			fmt.Sprintf("-x=%v", this.x*CHUNK_SIZE),
 			fmt.Sprintf("-z=%v", this.y*CHUNK_SIZE),
-			fmt.Sprintf("-o=%v", filepath.Join(outputPath, fmt.Sprintf("map.%d.%d.png", this.x, this.y))),
+			fmt.Sprintf("-o=%v", output),
 		}...)
 
 		cmd := exec.Command("rendermmm", args...)
@@ -41,6 +43,10 @@ func Worker(commonArgs []string, outputPath string, toWorker chan Pair, fromWork
 					exitcode := status.ExitStatus()
 					if exitcode == 77 {
 						// empty image
+						err := os.Remove(output)
+						if err != nil {
+							log.Printf("Failed to remove %s after empty render: %s\n", output, err.Error())
+						}
 						quiet = true
 					}
 				}
@@ -66,6 +72,25 @@ func main() {
 	pixelSamples := flag.Int("pixelsamples", 1, "Square root of number of probes per pixel")
 	cameraType := flag.String("camera", "iso", "Camera type (iso, topdown)")
 	flag.Parse()
+
+	fi, err := os.Stat(*outputPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			err = os.Mkdir(*outputPath, 0777)
+			if err != nil {
+				log.Printf("Couldn't mkdir %s: %s", *outputPath, err.Error())
+				os.Exit(1)
+			}
+		} else {
+			log.Printf("Couldn't stat %s: %s", *outputPath, err.Error())
+			os.Exit(1)
+		}
+	} else {
+		if !fi.IsDir() {
+			log.Printf("Output path (%s) is not a directory", *outputPath)
+			os.Exit(1)
+		}
+	}
 
 	commonArgs := []string{
 		fmt.Sprintf("-day=%v", *day),
@@ -142,7 +167,7 @@ func main() {
 	close(toWorker)
 
 	log.Printf("Writing html\n")
-	err := writeHtml(good, filepath.Join(*outputPath, "map.html"))
+	err = writeHtml(good, filepath.Join(*outputPath, "map.html"))
 	if err != nil {
 		fmt.Println(err)
 	}

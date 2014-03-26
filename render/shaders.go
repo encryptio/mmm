@@ -9,7 +9,7 @@ import (
 )
 
 var SkyDay = color.NRGBA{255, 255, 255, 255}
-var SkyNight = color.NRGBA{24, 24, 48, 255}
+var SkyNight = color.NRGBA{32, 32, 64, 255}
 
 func over(bottom, top color.NRGBA) (ret color.NRGBA) {
 	a := uint16(top.A)

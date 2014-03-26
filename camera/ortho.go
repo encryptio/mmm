@@ -9,7 +9,7 @@ func TopDown(offX, offZ float64) Camera {
 }
 
 func Isometric(offX, offZ float64) Camera {
-	return Ortho(offX, offZ, 1, -2, 1, 2, 32, -32, -32)
+	return Ortho(offX, offZ, 0.5, -1, 0.5, 1, 32, -32, -32)
 }
 
 func Ortho(offX, offZ float64, xdirX, xdirZ, zdirX, zdirZ float64, dirX, dirY, dirZ int) Camera {

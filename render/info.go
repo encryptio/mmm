@@ -29,6 +29,7 @@ var BlockInfo = map[uint16]Info{
 	17:  Info{color.NRGBA{78, 61, 34, 255}, 0},      // oak wood
 	18:  Info{color.NRGBA{55, 148, 11, 255}, 0},     // oak leaves
 	20:  Info{color.NRGBA{180, 215, 220, 128}, 0},   // glass
+	21:  Info{color.NRGBA{21, 86, 199, 255}, 0},     // lapis lazuli ore
 	22:  Info{color.NRGBA{27, 65, 156, 255}, 0},     // lapis lazuli
 	24:  Info{color.NRGBA{227, 220, 169, 255}, 0},   // sandstone
 	26:  Info{color.NRGBA{162, 34, 31, 255}, 0},     // bed block
@@ -58,6 +59,7 @@ var BlockInfo = map[uint16]Info{
 	70:  Info{color.NRGBA{117, 117, 117, 255}, 0},   // stone pressure plate
 	71:  Info{color.NRGBA{206, 206, 206, 255}, 0},   // iron door block
 	72:  Info{color.NRGBA{189, 153, 98, 255}, 0},    // wooden pressure plate
+	73:  Info{color.NRGBA{190, 0, 0, 255}, 64},      // redstone ore
 	76:  Info{color.NRGBA{255, 217, 0, 255}, 64},    // redstone torch (on)
 	77:  Info{color.NRGBA{77, 77, 77, 255}, 0},      // stone button
 	78:  Info{color.NRGBA{239, 255, 255, 255}, 0},   // snow
